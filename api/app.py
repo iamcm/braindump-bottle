@@ -41,15 +41,6 @@ def JSONResponse(callback):
     return wrapper
 
 
-# static files
-if settings.PROVIDE_STATIC_FILES:
-    @bottle.route('/<filepath:path>')
-    def index(filepath):
-        return bottle.static_file(filepath, root=settings.ROOTPATH +'/../frontend/')
-
-
-
-
 # auth
 def loginUser(userId):
     s = Session(_DBCON)
@@ -308,7 +299,7 @@ def index(id):
 
 
 
-
+    
 @bottle.route('/api/search/:searchterm')
 @checklogin
 @JSONResponse
@@ -341,6 +332,19 @@ def index(searchterm):
         output.append(i.get_json_safe())
 
     return json.dumps(output)
+
+
+
+# static files
+if settings.PROVIDE_STATIC_FILES:
+    @bottle.route('/m/<filepath:path>')
+    def index(filepath):
+        return bottle.static_file(filepath, root='/home/chris/code/braindump_mobile/')
+
+    @bottle.route('/<filepath:path>')
+    def index(filepath):
+        return bottle.static_file(filepath, root=settings.ROOTPATH +'/../frontend/')
+
 
 
 

@@ -6,7 +6,7 @@ $(document).ready(function(){
 
         var params = $(this).serialize();
 
-        $.post('/login', params, function(json){
+        $.post('/api/login', params, function(json){
             if(json.success==1){
                 window.location = '/index.html';
             } else {
