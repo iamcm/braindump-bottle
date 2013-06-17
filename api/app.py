@@ -104,6 +104,12 @@ def index():
 #######################################################
 # Main app routes
 #######################################################
+@bottle.route('/')
+def index():
+    return bottle.redirect('/index.html')
+
+
+
 @bottle.route('/api/tags')
 @checklogin
 @JSONResponse
