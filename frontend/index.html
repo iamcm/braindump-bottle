@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>Site</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <style>
+    body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+    }
+    </style>
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/generic.css" rel="stylesheet">
+    <link href="/static/css/site.css" rel="stylesheet">
+
+
+    <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+    <link rel="shortcut icon" href="/static/ico/favicon.ico">
+
+    <script type="t/template" id="tagsTpl">
+
+    {{@tags}}
+    <li>
+        <a href="#/filter/tag/{{=_val.slug}}">{{=_val.name}}</a>
+    </li>
+    {{/@tags}}
+
+    </script>
+
+    <script type="t/template" id="tagsAdminTpl">
+
+    {{@tags}}
+
+    <div class="item">
+        <div class="right">
+            <a class="px10" href="#/tag/{{=_val._id}}">edit</a>
+            <a class="px10 deleteLink" entity="tag" href="#/tag/{{=_val._id}}/delete">delete</a>
+        </div>
+        {{=_val.name}}
+    </div>
+
+    {{/@tags}}
+
+    </script>
+
+    <script type="t/template" id="itemsTpl">
+
+    {{@items}}
+    <div class="item">
+        <div class="right">
+            <a class="px10" href="#/item/{{=_val._id}}">edit</a>
+            <a class="px10 deleteLink" entity="item" href="#/item/{{=_val._id}}/delete">delete</a>
+        </div>
+        <div class="title">{{=_val.title}}</div>
+        <div class="content">{{=_val.content}}</div>
+    </div>
+    {{/@items}}
+
+    </script>
+
+
+    <script type="t/template" id="formTagTpl">
+
+    <form class="form-horizontal" id="formAddTag" method="post" autocomplete="off">
+        {{_id}}
+            <input type="hidden" name="_id" value="{{=_id}}" />
+        {{/_id}}
+
+        <div class="control-group">
+            <label class="control-label" for="inputName">Name</label>
+            <div class="controls">
+                <input type="text" id="inputName" name="name" value="{{name}}{{=name}}{{/name}}">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" class="btn" id="submit" value="Save" />
+            </div>
+        </div>
+    </form>
+
+    </script>
+
+
+    <script type="t/template" id="formItemTpl">
+
+    <form class="form-horizontal" id="formAddItem" method="post" autocomplete="off">
+        {{_id}}
+            <input type="hidden" name="_id" value="{{=_id}}" />
+        {{/_id}}
+
+        <div class="control-group">
+            <label class="control-label" for="inputTitle">Title</label>
+            <div class="controls">
+                <input type="text" id="inputTitle" name="title" value="{{title}}{{=title}}{{/title}}" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputContent">Content</label>
+            <div class="controls">
+                <textarea name="content" id="inputContent">{{content}}{{=content}}{{/content}}</textarea>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">Tags:</label>
+            <div class="controls">
+            {{@tags}}
+                {{_val.selected}}
+                    <button class="tag btn btn-primary" id="{{=_val._id}}">{{=_val.name}}</button>
+                {{:_val.selected}}
+                    <button class="tag btn" id="{{=_val._id}}">{{=_val.name}}</button>
+                {{/_val.selected}}
+            {{/@tags}}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="inputTag">New tag</label>
+            <div class="controls">
+                <input type="text" id="inputTag" name="tag" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" class="btn" id="submit" value="Save" />
+            </div>
+        </div>
+    </form>
+
+    </script>
+
+</head>
+
+<body>
+
+    <div>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div>
+                    <a class="brand" href="/">Braindump</a>
+
+                    <div class="nav-collapse collapse right">
+                        <ul class="nav">
+                            <li>
+                                <a href="#/">Items</a>
+                            </li>
+                            <li>
+                                <a href="#/tags">Tags</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container-fluid">
+
+            <div class="page" id="pageHome">
+                <div class="row-fluid">
+                    <div class="span10">
+                        <div>
+                            <div class="well form-search">
+                                <div class="input-prepend">
+                                    <span class="add-on"><i class="icon-search"></i></span>
+                                    <input id="search" placeholder="Search..." type="text" style="position: relative;left:-5px;">
+                                </div>
+                                <span class="right">
+                                    <a class="btn btn-primary" href="#/item">Add item</a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+
+                        <div id="items"></div>
+
+                        <button id="more_link" style="display:none" class="btn">More</button>
+                    </div>
+                    <div class="span2 ">
+                        <ul class="nav nav-list">
+                            <li class="nav-header">
+                                <a href="/tags">Tags</a>
+                            </li>
+                            <li>
+                                <a href="#/filter/tag/all">All</a>
+                            </li>
+                            <span id="tags"></span>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="pageTags">
+                <div class="row-fluid py10">
+                    <div class="span2"></div>
+                    <div class="span8">
+                        <span class="right">
+                            <a class="btn btn-primary" href="#/tag">Add tag</a>
+                        </span>
+                    </div>
+                    <div class="span2"></div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span2"></div>
+                    <div class="span8" id="tagsAdmin"></div>
+                    <div class="span2"></div>
+                </div>
+            </div>
+
+            <div class="page" id="pageTag">
+                <div class="row">
+                    <div class="span8 offset1" id="formTag"></div>
+                </div>
+            </div>
+
+            <div class="page" id="pageItem">
+                <div class="row">
+                    <div class="span8 offset1" id="formItem"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/path.min.js"></script>
+    <script src="/static/js/t.min.js"></script>
+    <script src="/static/js/util.js"></script>
+    <script src="/static/js/site.js"></script>
+    <script src="/static/tiny_mce/tiny_mce.js"></script>
+    <script src="/static/js/tiny_mce.js"></script>
+
+</body>
+</html>
+
+
