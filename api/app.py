@@ -3,8 +3,9 @@ import json
 import datetime
 import os 
 import bottle
-import settings
 import re
+import string
+import settings
 from bson import ObjectId
 from db import _DBCON
 from models import Util
@@ -16,6 +17,8 @@ from models.User import User
 from models.Models import Tag, Item
 
 
+def generate_api_key():
+    return ''.join(random.sample(string.letters + string.digits, 40))
 
 def checklogin(callback):
     def wrapper(*args, **kwargs):
@@ -25,10 +28,19 @@ def checklogin(callback):
             s = Session(_DBCON, publicId=token)
             if not s.valid or not s.check(bottle.request.get('REMOTE_ADDR'), bottle.request.get('HTTP_USER_AGENT')):
                 return bottle.HTTPError(403, 'Access denied')
-                
+
             else:
                 bottle.request.session = s
                 return callback(*args, **kwargs)
+        
+        elif bottle.request.GET.get('apikey'):
+            users = EntityManager(_DBCON).get_all(User, filter_criteria={'apikey':bottle.request.GET.get('apikey')})
+
+            if len(users)==1:
+                return callback(*args, **kwargs)
+            else:
+                return bottle.HTTPError(403, 'Access denied')
+
         else:
             return bottle.HTTPError(403, 'Access denied')
     return wrapper
@@ -87,6 +99,42 @@ def index():
     s.destroy()
     
     return ''
+
+
+
+@bottle.route('/api/apikey', method='GET')
+@checklogin
+def index():
+    u = User(_DBCON, _id=bottle.request.session.userId)
+    
+    if u:
+        key = u.apikey
+    else:
+        key = ''
+
+    return key
+
+
+
+@bottle.route('/api/apikey', method='POST')
+@checklogin
+def index():
+
+    u = User(_DBCON, _id=bottle.request.session.userId)
+    
+    if u:
+        key = generate_api_key()
+
+        while EntityManager(_DBCON).get_all(User, filter_criteria={'apikey':key}, count=True) > 0:
+            key = generate_api_key()
+
+        u.apikey = key
+        u.save()
+
+    else:
+        key = ''
+
+    return key
 
 
 

@@ -240,6 +240,39 @@ var Search = {
     }
 }
 
+var ApiKey = {
+
+    get:function(callback){
+        var self = this;
+
+        $.get('/api/apikey').done(function(key){
+            if(callback) callback(key);
+        });
+    },
+
+    generateKey:function(callback){
+        var self = this;
+
+        $.post('/api/apikey').done(function(key){
+            if(callback) callback(key);
+        });
+    },
+
+    attachEvents:function(){
+        var self = this;
+
+        if(EventRegistry.indexOf("btnGenerateApiKey") == -1){            
+            EventRegistry.push('btnGenerateApiKey');
+
+            $('#btnGenerateApiKey').live('click', function(){
+                self.generateKey(function(key){
+                    $('#apiKeyContainer').text(key);
+                })
+            });
+        }
+    }
+}
+
 
 $(document).ajaxError(function(event, jqxhr){
     if(jqxhr.status == 403){
@@ -308,6 +341,14 @@ Path.map("#/item/:id/delete").to(function(){
 Path.map("#/filter/tag/:tagname").to(function(){
     Router.showPage('pageHome');
     Item.getAll(this.params['tagname'])
+});
+
+Path.map("#/api-key").to(function(){
+    Router.showPage('pageApiKey');
+    ApiKey.attachEvents();
+    ApiKey.get(function(key){
+        $('#apiKeyContainer').text(key);
+    })
 });
 
 

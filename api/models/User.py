@@ -25,6 +25,7 @@ class User(BaseModel):
             ('salt', ''),
             ('valid', False),
             ('facebookuserId', None),
+            ('apikey', None),
             ('added', datetime.datetime.now()),
         ]
 
