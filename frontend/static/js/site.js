@@ -208,11 +208,14 @@ var Item = {
 }
 
 var Search = {
+    currentRequest:null,
 
     getAll:function(searchterm, callback){
         var self = this;
 
-        $.getJSON('/api/search/'+ searchterm, function(json){
+        if(self.currentRequest) self.currentRequest.abort();
+
+        self.currentRequest = $.getJSON('/api/search/'+ searchterm, function(json){
             Util.Templating.renderTemplate('itemsTpl', {'items':json}, 'items');
 
             if($('#items').children().length==1){
@@ -277,7 +280,7 @@ var ApiKey = {
 $(document).ajaxError(function(event, jqxhr){
     if(jqxhr.status == 403){
         window.location = '/login.html';
-    } else {
+    } else if(jqxhr.status == 500){
         Util.flashMessage('error', 'An error has occured');
     }
 })

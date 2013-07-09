@@ -23,4 +23,11 @@ function tinyMCEInit(){
 
 $(document).ready(function(){
     tinyMCEInit();
+
+    $('#inputTitle').live('keydown', function(ev){
+        if(ev.keyCode == 9){
+            tinyMCE.editors[0].focus();
+            ev.preventDefault();
+        }
+    })
 });

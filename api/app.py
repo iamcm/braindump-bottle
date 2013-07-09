@@ -154,7 +154,7 @@ def index():
 @JSONResponse
 def index():
     output = []
-    for t in EntityManager(_DBCON).get_all(Tag, sort_by=[('name',1)]):
+    for t in EntityManager(_DBCON).get_all(Tag, sort_by=[('slug',1)]):
         output.append(t.get_json_safe())
 
     return json.dumps(output)
@@ -262,8 +262,9 @@ def index():
     t = bottle.request.POST.get('title')
     c = bottle.request.POST.get('content')
     tagIds = bottle.request.POST.getall('tagIds[]')
+    newtagname = bottle.request.POST.get('tag')
 
-    if t and c and tagIds:
+    if (t and tagIds) or (t and newtagname):
         i = Item(_DBCON)
         i.title = t
         i.content = c
@@ -271,12 +272,12 @@ def index():
         for tagId in tagIds:
             i.tagIds.append(tagId)
 
-        if bottle.request.POST.get('tag'):
+        if newtagname:
             newtag = Tag(_DBCON)
-            newtag.name = bottle.request.POST.get('tag')
+            newtag.name = newtagname
             newtag.save()
             
-            i.tagIds.append(newtag._id)
+            i.tagIds.append(str(newtag._id))
 
         i.save()
         
