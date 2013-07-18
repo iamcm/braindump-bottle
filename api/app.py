@@ -297,6 +297,14 @@ def index(id):
     return json.dumps(i.get_json_safe())
 
 
+@bottle.route('/api/item/:id/content', method='GET')
+@checklogin
+def index(id):
+    i = Item(_DBCON, _id=id)
+
+    return i.content
+
+
 @bottle.route('/api/item/:id', method='POST')
 @checklogin
 @JSONResponse
