@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.abspath( os.path.join(__file__,'../../..')))
+
 import os
 import unittest
 import datetime

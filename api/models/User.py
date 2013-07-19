@@ -55,16 +55,15 @@ class User(BaseModel):
         BaseModel.save(self)
     
     def activate(self, token):
-        user = eval("%s.find_one({'token':'%s'}" % (self._mongocollection, token))
+        user = eval("%s.find_one({'token':'%s'})" % (self._mongocollection, token))
 
         if user:
-            self._id = user['_id']
-            user['token'] = ''
-            user['valid'] = True
-            
-            user.save()
-
             BaseModel.__init__(self, self.db, user['_id'])
+
+            self.token = ''
+            self.valid = True
+
+            self.save()
 
             return True
         else:

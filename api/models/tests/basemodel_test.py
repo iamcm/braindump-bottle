@@ -1,3 +1,6 @@
+import os, sys
+sys.path.append(os.path.abspath( os.path.join(__file__,'../../..')))
+
 import os
 import unittest
 import datetime
@@ -119,10 +122,10 @@ class BaseModelTest(unittest.TestCase):
 		self.assertEqual(model['tags'], hash['tags'])
 		self.assertEqual(model['added'], hash['added'])
 		#_get_hash should create an '__instanceOf__' property so check for that
-		self.assertEqual(model['__instanceOf__'], "<class 'basemodel_test.ChildModel'>")
+		self.assertEqual(model['__instanceOf__'], hash['__instanceOf__'] )
 
 
-	def test_get_json(self):
+	def test_get_json_safe(self):
 		m = ChildModel(_DBCON)
 		m.title = self._title
 		m.content = self._content
@@ -131,14 +134,15 @@ class BaseModelTest(unittest.TestCase):
 
 		model = _DBCON.ChildModel.find_one()
 		m = ChildModel(_DBCON, model['_id'])
-		hash = json.loads(m.get_json())
+
+		hash = m.get_json_safe()
 
 		self.assertEqual(str(model['_id']), hash['_id'])
 		self.assertEqual(str(model['title']), hash['title'])
 		self.assertEqual(str(model['content']), hash['content'])
 		index = 0
 		for t in model['tags']:
-			self.assertEqual(str(t), eval(hash['tags'])[index])
+			self.assertEqual(t, hash['tags'][index])
 			index += 1
 		self.assertEqual(str(model['added']), hash['added'])
 
