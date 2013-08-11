@@ -362,17 +362,23 @@ def index(id):
 @JSONResponse
 def index(searchterm):
     output = []
-
+    """
     items1 = EntityManager(_DBCON).get_all(Item, filter_criteria={
                                                     '$or':[
                                                         {'title':{'$regex':searchterm, '$options': 'i' }},
                                                         {'content':{'$regex':searchterm, '$options': 'i' }},
                                                     ]})
+    """
+    items1 = EntityManager(_DBCON).fuzzy_text_search(Item, searchterm, 'title')
+    items2 = EntityManager(_DBCON).fuzzy_text_search(Item, searchterm, 'content')
+
+    items1.extend(items2)
 
     if not items1:
         items1 = []
 
-    tags = [str(t._id) for t in EntityManager(_DBCON).get_all(Tag, filter_criteria={'name':{'$regex':searchterm, '$options': 'i' }})]
+    #tags = [str(t._id) for t in EntityManager(_DBCON).get_all(Tag, filter_criteria={'name':{'$regex':searchterm, '$options': 'i' }})]
+    tags = [str(t._id) for t in EntityManager(_DBCON).fuzzy_text_search(Tag, searchterm, 'name')]
 
     items2 = []
     if len(tags)>0:
@@ -381,11 +387,20 @@ def index(searchterm):
                                                     '$in':tags
                                                 }
                                             })
-
+    
 
     items1.extend(items2)    
 
+    #get distinct items
+    ids = []
+    final_items = []
     for i in items1:
+        if i._id not in ids:
+            ids.append(i._id)
+            final_items.append(i)
+
+
+    for i in final_items:
         output.append(i.get_json_safe())
 
     return json.dumps(output)
