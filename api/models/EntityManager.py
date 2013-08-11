@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 from bson.objectid import ObjectId
 import datetime
@@ -126,6 +127,7 @@ class EntityManager:
         """
         matches = {} #for raw matches
         goodmatches = [] #for matches that are accurate
+        compiledre = re.compile('\W|_') #match all non-alphanumeric characters
 
         # search a single word at a time
         for word in searchterm.split(' '):
@@ -140,17 +142,26 @@ class EntityManager:
 
                 # add each result to the 'matches' list, or increment its count if it already exists
                 for result in eval(command):
-                    try:
-                        matches[result[field]]['count'] += 1
-                    except:
-                        matches[result[field]] = {'entity':result, 'count':1}
+                    #get the actual word(s) that matched
+
+                    #replace non-alphanumeric characters with spaces
+                    matched_content = compiledre.sub(' ', result[field])
+
+                    for _word in matched_content.split(' '):
+                        if term in _word:
+                            try:
+                                matches[str(result['_id']) +':'+ _word]['count'] += 1
+                            except:
+                                matches[str(result['_id']) +':'+ _word] = {'entity':result, 'count':1}
     
+
+
             # if we have any stems
             if len(stems) > 0:
                 # for each match calculate its accuracy and add it to the 'goodmatches' list if applicable
                 for m, entity_count_dict in matches.items():
                     c = entity_count_dict['count']
-
+                    m = m.split(':')[1]
                     """
                     if the percentage of stems that matched is greater than 70 
                     eg 'TIME' would stem to 'ti','im','me', so a search for 'tide' would only match two stems out of three
@@ -161,9 +172,13 @@ class EntityManager:
                     eg the example above would pass now because i assume that the words are similar based on a partial stem match and a similar 
                     word length
                     """
-                    if Decimal(c) / Decimal(len(stems)) * 100 > 70 \
-                        or (len(m) < len(word)+2 and len(m) >= len(word) and Decimal(c) / Decimal(len(stems)) * 100 > 20):
 
+                    if Decimal(c) / Decimal(len(stems)) * 100 > 70 \
+                        or (len(m) < len(word)+2 and len(m) >= len(word) and Decimal(c) / Decimal(len(stems)) * 100 > 30):
+                        
+                        #Logger.log_to_file(m)
+                        #Logger.log_to_file(100*c)
+                        #Logger.log_to_file(100-len(m))
                         """
                         this is a good match so add it to the list along with some weighting fields to order the results by. 
 
